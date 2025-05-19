@@ -1,18 +1,16 @@
 version: '3.8'
-
 services:
-  postgres-auth:
-    image: postgres:15
-    container_name: postgres-auth
-    restart: always
-    environment:
-      POSTGRES_DB: authdb
-      POSTGRES_USER: authuser
-      POSTGRES_PASSWORD: authpass
+  sqlserver:
+    image: mcr.microsoft.com/mssql/server:2022-latest
+    container_name: sqlserver
     ports:
-      - "5432:5432"
-    volumes:
-      - auth_data:/var/lib/postgresql/data
+      - "1433:1433"
+    environment:
+      SA_PASSWORD: "YourStrong!Passw0rd"
+      ACCEPT_EULA: "Y"
+    networks:
+      - easybuy-net
 
-volumes:
-  auth_data:
+networks:
+  easybuy-net:
+    driver: bridge
