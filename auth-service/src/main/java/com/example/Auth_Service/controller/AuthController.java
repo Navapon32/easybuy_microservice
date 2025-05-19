@@ -1,8 +1,10 @@
 package com.example.Auth_Service.controller;
 
 import com.example.Auth_Service.model.dto.request.LoginRequest;
+import com.example.Auth_Service.model.dto.request.RefreshTokenRequest;
 import com.example.Auth_Service.model.dto.request.RegisterRequest;
 import com.example.Auth_Service.model.dto.response.AuthResponse;
+import com.example.Auth_Service.model.entity.User;
 import com.example.Auth_Service.service.AuthService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
@@ -25,6 +27,11 @@ public class AuthController {
     public ResponseEntity<AuthResponse> login(@RequestBody LoginRequest request) {
         AuthResponse response = authService.login(request);
         return ResponseEntity.ok(response);
+    }
+
+    @PostMapping("/refresh-token")
+    public ResponseEntity<AuthResponse> refreshToken(@RequestBody RefreshTokenRequest request) {
+        return ResponseEntity.ok(authService.refreshToken(request));
     }
 
 }

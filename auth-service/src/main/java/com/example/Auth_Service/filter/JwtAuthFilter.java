@@ -1,9 +1,11 @@
 package com.example.Auth_Service.filter;
 
 import com.example.Auth_Service.config.CustomUserDetails;
+import com.example.Auth_Service.model.entity.Role;
 import com.example.Auth_Service.model.entity.User;
 import com.example.Auth_Service.repository.UserRepository;
 import com.example.Auth_Service.util.JwtUtil;
+import io.jsonwebtoken.Claims;
 import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;
@@ -28,11 +30,9 @@ public class JwtAuthFilter extends OncePerRequestFilter {
                                     FilterChain filterChain)
             throws ServletException, IOException {
 
-
         final String authHeader = request.getHeader("Authorization");
 
         if (authHeader == null || !authHeader.startsWith("Bearer ")) {
-            System.out.println("[JwtAuthFilter] No Bearer token → continuing");
             filterChain.doFilter(request, response);
             return;
         }
@@ -40,24 +40,27 @@ public class JwtAuthFilter extends OncePerRequestFilter {
         final String jwt = authHeader.substring(7);
         final String username = jwtUtil.extractUsername(jwt);
 
-
         if (username != null && SecurityContextHolder.getContext().getAuthentication() == null) {
-            User user = userRepository.findByUsername(username).orElse(null);
-            if (user != null && jwtUtil.isTokenValid(jwt)) {
-                CustomUserDetails userDetails = new CustomUserDetails(user);
+            if (jwtUtil.isTokenValid(jwt)) {
+                Claims claims = jwtUtil.extractAllClaims(jwt);
+                String role = claims.get("role", String.class);
+
+                CustomUserDetails userDetails = new CustomUserDetails(
+                        User.builder().username(username).password("N/A").role(Role.valueOf(role)).build()
+                );
+
                 UsernamePasswordAuthenticationToken authToken =
                         new UsernamePasswordAuthenticationToken(
                                 userDetails,
                                 null,
                                 userDetails.getAuthorities()
                         );
-                System.out.println("[JwtAuthFilter] Setting auth context...");
                 SecurityContextHolder.getContext().setAuthentication(authToken);
             }
         }
 
-        System.out.println("[JwtAuthFilter] Done → proceeding to next filter");
         filterChain.doFilter(request, response);
     }
+
 
 }
